@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin To-Do System</title>
+    <link rel="stylesheet" href="ui.css">
+</head>
+<body>
+    <div id="app" class="hidden">
+        <div class="app-container">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="logo">
+                        <div class="logo-text">
+                            <h1>BUG TOOL</h1>
+                            <p>Made By senslessDev</p>
+                        </div>
+                    </div>
+                    <button class="btn-icon btn-close" id="closeBtn" title="Close">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                
+                <nav class="sidebar-nav">
+                    <button class="nav-item active" data-tab="pending">
+                        <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 11l3 3L22 4"></path>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                        </svg>
+                        <span>Pending Tasks</span>
+                        <span class="nav-badge" id="pendingBadge">0</span>
+                    </button>
+                    <button class="nav-item" data-tab="completed">
+                        <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Completed</span>
+                        <span class="nav-badge" id="completedBadge">0</span>
+                    </button>
+                    <button class="nav-item" data-tab="resources">
+                        <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        <span>Resources</span>
+                    </button>
+                    <button class="nav-item" data-tab="lounge">
+                        <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span>Admin Lounge</span>
+                    </button>
+                    <button class="nav-item" data-tab="settings">
+                        <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"></path>
+                        </svg>
+                        <span>Settings</span>
+                    </button>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Top Bar -->
+                <div class="top-bar">
+                    <div class="top-bar-left">
+                        <h2 class="page-title" id="pageTitle">Pending Tasks</h2>
+                        <p class="page-subtitle" id="pageSubtitle">Manage your tasks efficiently</p>
+                    </div>
+                    <div class="top-bar-right">
+                        <button class="btn btn-primary" id="addTaskBtn" style="display: flex; align-items: center; gap: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Create Task
+                        </button>
+                        <button class="btn-icon" id="refreshBtn" title="Refresh">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 4 23 10 17 10"></polyline>
+                                <polyline points="1 20 1 14 7 14"></polyline>
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Priority Filter (only for task tabs) -->
+                <div id="priorityFilter" class="priority-filter">
+                    <div class="filter-label">Filter by Priority:</div>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-priority="all">All</button>
+                        <button class="filter-btn" data-priority="urgent">Urgent</button>
+                        <button class="filter-btn" data-priority="high">High</button>
+                        <button class="filter-btn" data-priority="started">Started</button>
+                        <button class="filter-btn" data-priority="normal">Normal</button>
+                        <button class="filter-btn" data-priority="low">Low</button>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div class="content-area">
+                    <!-- Task Lists -->
+                    <div id="pendingTasks" class="task-list active">
+                        <div class="empty-state" id="pendingEmpty">
+                            <div class="empty-icon">📝</div>
+                            <h3>No pending tasks</h3>
+                            <p>All caught up! Create a new task to get started.</p>
+                        </div>
+                    </div>
+                    <div id="completedTasks" class="task-list">
+                        <div class="empty-state" id="completedEmpty">
+                            <div class="empty-icon">✅</div>
+                            <h3>No completed tasks</h3>
+                            <p>Completed tasks will appear here.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Resources List -->
+                    <div id="resourcesList" class="task-list">
+                        <div class="empty-state" id="resourcesEmpty">
+                            <div class="empty-icon">📦</div>
+                            <h3>Loading resources...</h3>
+                        </div>
+                    </div>
+                    
+                    <!-- Admin Lounge -->
+                    <div id="loungeContainer" class="lounge-container hidden">
+                        <div class="lounge-header">
+                            <div>
+                                <h3>💬 Admin Chat Lounge</h3>
+                                <p class="lounge-subtitle">Communicate with your team in real-time</p>
+                            </div>
+                        </div>
+                        <div id="chatMessages" class="chat-messages">
+                            <div class="empty-state">
+                                <div class="empty-icon">💬</div>
+                                <h3>No messages yet</h3>
+                                <p>Start the conversation!</p>
+                            </div>
+                        </div>
+                        <div class="chat-input-container">
+                            <input type="text" id="chatInput" class="chat-input" placeholder="Type your message..." maxlength="500">
+                            <button id="sendChatBtn" class="btn btn-primary btn-send">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                                Send
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Settings Container -->
+                    <div id="settingsContainer" class="settings-container hidden">
+                        <div class="settings-content">
+                            <div class="settings-section">
+                                <h3 class="settings-section-title">Color Customization</h3>
+                                <p class="settings-section-desc">Adjust colors to match your server's style</p>
+                                
+                                <div class="settings-grid">
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Accent Color</span>
+                                            <span class="setting-desc">Primary action color</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="accentColor" class="color-picker" value="#f44336">
+                                            <input type="text" id="accentColorText" class="color-text" value="#f44336" maxlength="7">
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Accent Hover</span>
+                                            <span class="setting-desc">Hover state color</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="accentHoverColor" class="color-picker" value="#d32f2f">
+                                            <input type="text" id="accentHoverColorText" class="color-text" value="#d32f2f" maxlength="7">
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Success Color</span>
+                                            <span class="setting-desc">Success/complete actions</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="successColor" class="color-picker" value="#4caf50">
+                                            <input type="text" id="successColorText" class="color-text" value="#4caf50" maxlength="7">
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Danger Color</span>
+                                            <span class="setting-desc">Delete/warning actions</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="dangerColor" class="color-picker" value="#f44336">
+                                            <input type="text" id="dangerColorText" class="color-text" value="#f44336" maxlength="7">
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Warning Color</span>
+                                            <span class="setting-desc">Warning/alert actions</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="warningColor" class="color-picker" value="#ff9800">
+                                            <input type="text" id="warningColorText" class="color-text" value="#ff9800" maxlength="7">
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Info Color</span>
+                                            <span class="setting-desc">Information displays</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="infoColor" class="color-picker" value="#2196f3">
+                                            <input type="text" id="infoColorText" class="color-text" value="#2196f3" maxlength="7">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h3 class="settings-section-title">UI Background Colors</h3>
+                                <p class="settings-section-desc">Customize background colors for different UI areas</p>
+                                
+                                <div class="settings-grid">
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Primary Background</span>
+                                            <span class="setting-desc">Main content area</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="bgPrimaryColor" class="color-picker" value="#1a1d29">
+                                            <input type="text" id="bgPrimaryColorText" class="color-text" value="#1a1d29" maxlength="7">
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Secondary Background</span>
+                                            <span class="setting-desc">Cards and panels</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="bgSecondaryColor" class="color-picker" value="#252936">
+                                            <input type="text" id="bgSecondaryColorText" class="color-text" value="#252936" maxlength="7">
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Tertiary Background</span>
+                                            <span class="setting-desc">Nested elements</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="bgTertiaryColor" class="color-picker" value="#2d3142">
+                                            <input type="text" id="bgTertiaryColorText" class="color-text" value="#2d3142" maxlength="7">
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Sidebar Background</span>
+                                            <span class="setting-desc">Navigation sidebar</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="sidebarBgColor" class="color-picker" value="#141722">
+                                            <input type="text" id="sidebarBgColorText" class="color-text" value="#141722" maxlength="7">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h3 class="settings-section-title">Text & Border Colors</h3>
+                                <p class="settings-section-desc">Customize text and border colors</p>
+                                
+                                <div class="settings-grid">
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Primary Text</span>
+                                            <span class="setting-desc">Main text color</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="textPrimaryColor" class="color-picker" value="#ffffff">
+                                            <input type="text" id="textPrimaryColorText" class="color-text" value="#ffffff" maxlength="7">
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Secondary Text</span>
+                                            <span class="setting-desc">Secondary text color</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="textSecondaryColor" class="color-picker" value="#b0b0b0">
+                                            <input type="text" id="textSecondaryColorText" class="color-text" value="#b0b0b0" maxlength="7">
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Border Color</span>
+                                            <span class="setting-desc">Border and divider color</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="borderColor" class="color-picker" value="#3d4050">
+                                            <input type="text" id="borderColorText" class="color-text" value="#3d4050" maxlength="7">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h3 class="settings-section-title">Button Colors</h3>
+                                <p class="settings-section-desc">Customize button appearance</p>
+                                
+                                <div class="settings-grid">
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Primary Button</span>
+                                            <span class="setting-desc">Main action buttons</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="btnPrimaryColor" class="color-picker" value="#f44336">
+                                            <input type="text" id="btnPrimaryColorText" class="color-text" value="#f44336" maxlength="7">
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Primary Button Hover</span>
+                                            <span class="setting-desc">Primary button hover state</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="btnPrimaryHoverColor" class="color-picker" value="#d32f2f">
+                                            <input type="text" id="btnPrimaryHoverColorText" class="color-text" value="#d32f2f" maxlength="7">
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Secondary Button</span>
+                                            <span class="setting-desc">Secondary action buttons</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="btnSecondaryColor" class="color-picker" value="#6c757d">
+                                            <input type="text" id="btnSecondaryColorText" class="color-text" value="#6c757d" maxlength="7">
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Secondary Button Hover</span>
+                                            <span class="setting-desc">Secondary button hover state</span>
+                                        </label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="btnSecondaryHoverColor" class="color-picker" value="#5a6268">
+                                            <input type="text" id="btnSecondaryHoverColorText" class="color-text" value="#5a6268" maxlength="7">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h3 class="settings-section-title">UI Elements</h3>
+                                <p class="settings-section-desc">Customize spacing and sizes</p>
+                                
+                                <div class="settings-grid">
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Border Radius</span>
+                                            <span class="setting-desc">Roundness of elements</span>
+                                        </label>
+                                        <div class="slider-input-group">
+                                            <input type="range" id="borderRadius" class="slider" min="0" max="20" value="8" step="1">
+                                            <span class="slider-value" id="borderRadiusValue">8px</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="setting-item">
+                                        <label class="setting-label">
+                                            <span>Card Shadow</span>
+                                            <span class="setting-desc">Shadow intensity</span>
+                                        </label>
+                                        <div class="slider-input-group">
+                                            <input type="range" id="cardShadow" class="slider" min="0" max="30" value="12" step="1">
+                                            <span class="slider-value" id="cardShadowValue">12px</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-actions">
+                                <button class="btn btn-secondary" id="resetSettingsBtn">Reset to Default</button>
+                                <button class="btn btn-primary" id="saveSettingsBtn">Save Settings</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+
+        <!-- Modals -->
+        <!-- Add Task Modal -->
+        <div id="addTaskModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Create New Task</h2>
+                    <button class="btn-icon" id="closeModalBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="taskTitle">Task Title <span class="label-optional">(Optional)</span></label>
+                        <input type="text" id="taskTitle" placeholder="Enter task title...">
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDescription">Task Description <span class="label-required">*</span></label>
+                        <textarea id="taskDescription" rows="4" placeholder="Enter task description..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskAssignedTo">Assigned To <span class="label-optional">(Optional)</span></label>
+                            <input type="text" id="taskAssignedTo" placeholder="Player ID or name">
+                        </div>
+                        <div class="form-group">
+                            <label for="taskPriority">Priority</label>
+                            <select id="taskPriority">
+                                <option value="normal">Normal</option>
+                                <option value="low">Low</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                                <option value="started">Started</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskResource">Resource <span class="label-optional">(Optional)</span></label>
+                        <select id="taskResource">
+                            <option value="">None</option>
+                        </select>
+                    </div>
+                    <div id="resourceTasksInfo" class="resource-tasks-info hidden"></div>
+                    <div class="position-capture-info">
+                        <div style="display: flex; align-items: center; gap: 8px; padding: 12px; background: rgba(23, 162, 184, 0.1); border-radius: 8px; border-left: 3px solid var(--info-color);">
+                            <span style="font-size: 20px;">📍</span>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500; font-size: 13px; color: var(--text-primary); margin-bottom: 2px;">Position will be captured</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">Your current location (vector4) will be automatically saved with this task</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelTaskBtn">Cancel</button>
+                    <button class="btn btn-primary" id="submitTaskBtn">Create Task</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Resource Files Modal -->
+        <div id="resourceFilesModal" class="modal hidden">
+            <div class="modal-backdrop" onclick="closeResourceFilesModal()"></div>
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h2 id="resourceFilesTitle">Resource Files</h2>
+                    <button class="btn-icon" id="closeResourceFilesModalBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="resourceFilesList" class="files-list"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="closeResourceFilesBtn">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Details Modal -->
+        <div id="taskDetailsModal" class="modal hidden">
+            <div class="modal-backdrop" onclick="closeTaskDetailsModal()"></div>
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h2>Task Details</h2>
+                    <button class="btn-icon" id="closeDetailsModalBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body" id="taskDetailsBody"></div>
+                <div class="modal-footer" id="taskDetailsFooter"></div>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirmModal" class="modal hidden">
+            <div class="modal-backdrop" onclick="closeConfirmModal()"></div>
+            <div class="modal-content modal-small">
+                <div class="modal-header">
+                    <h2 id="confirmTitle">Confirm Action</h2>
+                </div>
+                <div class="modal-body">
+                    <p id="confirmMessage">Are you sure?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="confirmCancelBtn">Cancel</button>
+                    <button class="btn btn-primary" id="confirmOkBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Priority Selection Modal -->
+        <div id="priorityModal" class="modal hidden">
+            <div class="modal-backdrop" onclick="closePriorityModal()"></div>
+            <div class="modal-content modal-small">
+                <div class="modal-header">
+                    <h2>Change Priority</h2>
+                    <button class="btn-icon" id="closePriorityModalBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="prioritySelect">Select Priority</label>
+                        <select id="prioritySelect">
+                            <option value="low">Low</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                            <option value="started">Started</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="priorityCancelBtn">Cancel</button>
+                    <button class="btn btn-primary" id="priorityConfirmBtn">Update Priority</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reopen Task Reason Modal -->
+        <div id="reopenModal" class="modal hidden">
+            <div class="modal-backdrop" onclick="closeReopenModal()"></div>
+            <div class="modal-content modal-small">
+                <div class="modal-header">
+                    <h2>Reopen Task</h2>
+                    <button class="btn-icon" id="closeReopenModalBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="reopenReason">Please provide a reason for reopening this task:</label>
+                        <textarea id="reopenReason" rows="4" placeholder="Enter reason for reopening..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="reopenCancelBtn">Cancel</button>
+                    <button class="btn btn-primary" id="reopenConfirmBtn">Reopen Task</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Complete Task Reason Modal -->
+        <div id="completeModal" class="modal hidden">
+            <div class="modal-backdrop" onclick="closeCompleteModal()"></div>
+            <div class="modal-content modal-small">
+                <div class="modal-header">
+                    <h2>Complete Task</h2>
+                    <button class="btn-icon" id="closeCompleteModalBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="completeReason">Please provide a description of why this task is complete:</label>
+                        <textarea id="completeReason" rows="4" placeholder="Enter completion description..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="completeCancelBtn">Cancel</button>
+                    <button class="btn btn-primary" id="completeConfirmBtn">Complete Task</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Task Reason Modal -->
+        <div id="deleteModal" class="modal hidden">
+            <div class="modal-backdrop" onclick="closeDeleteModal()"></div>
+            <div class="modal-content modal-small">
+                <div class="modal-header">
+                    <h2>Delete Task</h2>
+                    <button class="btn-icon" id="closeDeleteModalBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="deleteReason">Please provide a reason for deleting this task:</label>
+                        <textarea id="deleteReason" rows="4" placeholder="Enter reason for deletion..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="deleteCancelBtn">Cancel</button>
+                    <button class="btn btn-danger" id="deleteConfirmBtn">Delete Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="ui.js"></script>
+</body>
+</html>
